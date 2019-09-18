@@ -1,0 +1,85 @@
+version: 2.1
+
+commands:
+  setup-poetry:
+    steps:
+      - run:
+          name: Install poetry
+          command: |
+            curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | POETRY_PREVIEW=1 python
+            echo 'export PATH="$HOME/.poetry/bin:$PATH"' >> $BASH_ENV
+
+  setup-aws:
+    steps:
+      - run:
+          name: Setup AWS cli
+          command: |
+            aws configure set default.region "${AWS_DEFAULT_REGION:-us-east-1}"
+            printf "${AWS_CREDENTIALS}" > ~/.aws/credentials
+
+jobs:
+  python-35-test:
+    docker:
+      - image: python:3.5.5
+    steps:
+      - checkout
+      - setup-poetry
+      - run:
+          command: |
+            make init test
+
+  python-36-test:
+    docker:
+      - image: python:3.6.5
+    steps:
+      - checkout
+      - setup-poetry
+      - run:
+          command: |
+            make init test
+
+  python-37-test:
+    docker:
+      - image: python:3.7.4
+    steps:
+      - checkout
+      - setup-poetry
+      - run:
+          command: |
+            make init test
+
+  lint:
+    docker:
+      - image: python:3.6.5
+    steps:
+      - checkout
+      - setup-poetry
+      - run:
+          command: |
+            make init lint
+
+  publish:
+    docker:
+      - image: schireson/cicd-python
+    steps:
+      - checkout
+      - setup-aws
+      - setup-poetry
+      - run:
+          command: |
+            lucha aws whitelist --profile artifactory -- make publish
+
+workflows:
+  test:
+    jobs:
+      - python-35-test
+      - python-36-test
+      - python-37-test
+      - lint
+      - publish:
+          requires:
+            - lint
+          filters:
+            branches:
+              only:
+                - /^master$/

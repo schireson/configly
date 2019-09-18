@@ -1,0 +1,7 @@
+[run]
+branch = True
+
+[paths]
+airflow_docker_compose =
+    src/airflow_docker_compose/
+    .tox/**/airflow_docker_compose/
