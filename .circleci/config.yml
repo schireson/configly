@@ -79,6 +79,9 @@ workflows:
       - publish:
           requires:
             - lint
+            - python-35-test
+            - python-36-test
+            - python-37-test
           filters:
             branches:
               only:

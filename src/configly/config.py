@@ -1,90 +1,50 @@
 import copy
-import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 
-from configly.interpolators import EnvVarInterpolator, FileInterpolator
 from configly.loaders import JsonLoader, TomlLoader, YamlLoader
-
-default_interpolation_types = {"ENV": EnvVarInterpolator(), "FILE": FileInterpolator()}
-
-
-def post_process(loader, value, interpolation_types=None):
-    if isinstance(value, Mapping):
-        result = {}
-        for key, item in value.items():
-            result[key] = post_process(loader, item, interpolation_types=interpolation_types)
-        return result
-
-    elif isinstance(value, Iterable) and not isinstance(value, str):
-        result = []
-        for item in value:
-            result.append(post_process(loader, item, interpolation_types=interpolation_types))
-        return result
-
-    else:
-        if not isinstance(value, str):
-            return value
-
-        match = re.match(r"(.*)\<%\s*(\w+)\[([\w.]+)(?:,\s*(.+))?\]\s*%>(.*)", value)
-        if match:
-            groups = match.groups()
-            pre, interpolation_type, var_name, default, post = groups
-
-            all_interpolation_types = {**default_interpolation_types, **(interpolation_types or {})}
-            if interpolation_type not in all_interpolation_types:
-                raise ValueError("Unrecognized loader type: {}".format(interpolation_type))
-
-            interpolator = all_interpolation_types[interpolation_type]
-            if default is None:
-                try:
-                    var_value = interpolator[var_name]
-                except KeyError:
-                    raise ValueError(
-                        "The requested {} value '{}' was not found".format(
-                            interpolation_type.lower(), var_name
-                        )
-                    )
-            else:
-                var_value = interpolator.get(var_name, default)
-
-            result = pre + var_value + post
-
-            if getattr(interpolator, "yaml_safe", True):
-                return loader.load_value(result)
-            return result
-        return value
+from configly.process import post_process
+from configly.registry import registry
 
 
 class Config:
-    def __init__(self, value=None):
+    def __init__(self, value=None, _src_input=None, _loader=None, _registry=registry):
         if value is None:
             value = {}
         self._value = value
 
+        self._src_input = _src_input
+        self._loader = _loader
+        self._registry = _registry
+
     @classmethod
-    def from_loader(cls, loader, file, interpolation_types=None):
+    def from_loader(cls, loader, file, registry=registry):
         with open(file, "rb") as f:
             result = loader.load(f)
 
-        return cls(post_process(loader, result, interpolation_types=interpolation_types))
+        output = post_process(loader=loader, value=result, registry=registry)
+        return cls(output, _src_input=result, _loader=loader, _registry=registry)
 
     @classmethod
-    def from_yaml(cls, file, interpolation_types=None):
+    def from_yaml(cls, file, registry=registry):
         """Open a yaml `file` and load it into the resulting config object.
         """
-        return cls.from_loader(YamlLoader(), file, interpolation_types)
+        return cls.from_loader(YamlLoader(), file, registry=registry)
 
     @classmethod
-    def from_json(cls, file, interpolation_types=None):
+    def from_json(cls, file, registry=registry):
         """Open a toml `file` and load it into the resulting config object.
         """
-        return cls.from_loader(JsonLoader(), file, interpolation_types)
+        return cls.from_loader(JsonLoader(), file, registry=registry)
 
     @classmethod
-    def from_toml(cls, file, interpolation_types=None):
+    def from_toml(cls, file, registry=registry):
         """Open a toml `file` and load it into the resulting config object.
         """
-        return cls.from_loader(TomlLoader(), file, interpolation_types)
+        return cls.from_loader(TomlLoader(), file, registry=registry)
+
+    def refresh(self):
+        update = post_process(loader=self._loader, value=self._src_input, registry=self._registry)
+        self._value.update(update)
 
     def to_dict(self):
         return copy.deepcopy(self._value)
@@ -92,7 +52,12 @@ class Config:
     def __iter__(self):
         for key, value in self._value.items():
             if isinstance(value, Mapping):
-                value = self.__class__(value)
+                value = self.__class__(
+                    value,
+                    _src_input=self._src_input and self._src_input[key],
+                    _loader=self._loader,
+                    _registry=self._registry,
+                )
 
             yield key, value
 
@@ -103,7 +68,12 @@ class Config:
             raise KeyError("'{}' not found in: {}.".format(attr, self))
 
         if isinstance(value, Mapping):
-            return self.__class__(value)
+            return self.__class__(
+                value,
+                _src_input=self._src_input and self._src_input[attr],
+                _loader=self._loader,
+                _registry=self._registry,
+            )
         return value
 
     def __getattr__(self, name):

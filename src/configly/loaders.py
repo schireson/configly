@@ -1,8 +1,6 @@
 import json
 
-
-def get_package_name():
-    return __name__.split(".")[0]
+from configly import get_package_name
 
 
 class YamlLoader:

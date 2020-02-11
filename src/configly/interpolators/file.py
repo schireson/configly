@@ -2,16 +2,6 @@ import functools
 import os
 
 
-class EnvVarInterpolator:
-    yaml_safe = True
-
-    def __getitem__(self, name):
-        return os.environ[name]
-
-    def get(self, name, default=None):
-        return os.environ.get(name, default)
-
-
 class FileInterpolator:
     yaml_safe = False
 
