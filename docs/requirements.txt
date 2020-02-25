@@ -1,0 +1,6 @@
+m2r
+sphinx
+sphinx-autobuild
+sphinx_autodoc_typehints
+sphinx_rtd_theme
+.
