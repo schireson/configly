@@ -10,19 +10,19 @@ build:
 test:
 	coverage run -a -m py.test src tests -vv
 	coverage report
-	poetry run coverage xml
+	coverage xml
 
 lint:
-	poetry run flake8 src tests
-	poetry run isort --check-only --recursive src tests
-	poetry run pydocstyle src tests
-	poetry run black --check src tests
-	poetry run mypy src tests
-	poetry run bandit src
+	flake8 src tests
+	isort --check-only --recursive src tests
+	pydocstyle src tests
+	black --check src tests
+	mypy src tests
+	bandit src
 
 format:
-	poetry run isort --recursive src tests
-	poetry run black src tests
+	isort --recursive src tests
+	black src tests
 
 publish: build
 	poetry publish -u __token__ -p '${PYPI_PASSWORD}' --no-interaction

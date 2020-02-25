@@ -56,7 +56,7 @@ commands:
       - run:
           name: Run a make command
           command: |
-            make << parameters.command >>
+            poetry run make << parameters.command >>
 
   setup-python-base:
     description: Install python dependencies
