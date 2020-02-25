@@ -1,87 +1,160 @@
 version: 2.1
 
-commands:
-  setup-poetry:
-    steps:
-      - run:
-          name: Install poetry
-          command: |
-            curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | POETRY_PREVIEW=1 python
-            echo 'export PATH="$HOME/.poetry/bin:$PATH"' >> $BASH_ENV
-
-  setup-aws:
-    steps:
-      - run:
-          name: Setup AWS cli
-          command: |
-            aws configure set default.region "${AWS_DEFAULT_REGION:-us-east-1}"
-            printf "${AWS_CREDENTIALS}" > ~/.aws/credentials
-
-jobs:
-  python-35-test:
+executors:
+  python36:
     docker:
-      - image: python:3.5.5
-    steps:
-      - checkout
-      - setup-poetry
-      - run:
-          command: |
-            make init test
+      - image: circleci/python:3.6
+      - image: postgres:9.6.10-alpine
+        environment:
+          POSTGRES_DB: dev
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+      - image: circleci/mongo:3.6.12
+        command: "mongod --journal"
 
-  python-36-test:
+  python37:
     docker:
-      - image: python:3.6.5
-    steps:
-      - checkout
-      - setup-poetry
-      - run:
-          command: |
-            make init test
+      - image: circleci/python:3.7
+      - image: postgres:9.6.10-alpine
+        environment:
+          POSTGRES_DB: dev
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+      - image: circleci/mongo:3.6.12
+        command: "mongod --journal"
 
-  python-37-test:
+  python38:
     docker:
-      - image: python:3.7.4
-    steps:
-      - checkout
-      - setup-poetry
-      - run:
-          command: |
-            make init test
-
-  lint:
-    docker:
-      - image: python:3.6.5
-    steps:
-      - checkout
-      - setup-poetry
-      - run:
-          command: |
-            make init lint
+      - image: circleci/python:3.8
+      - image: postgres:9.6.10-alpine
+        environment:
+          POSTGRES_DB: dev
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+      - image: circleci/mongo:3.6.12
+        command: "mongod --journal"
 
   publish:
     docker:
-      - image: schireson/cicd-python
+      - image: circleci/python:3.6
+
+commands:
+  setup:
     steps:
       - checkout
-      - setup-aws
-      - setup-poetry
       - run:
+          name: Execute prerequisite setup
           command: |
-            lucha aws whitelist --profile artifactory -- make publish
+            curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+            echo 'export PATH="$HOME/.poetry/bin:$PATH"' >> $BASH_ENV
+
+  run-make:
+    parameters:
+      command:
+        type: string
+    steps:
+      - run:
+          name: Run a make command
+          command: |
+            make << parameters.command >>
+
+  setup-python-base:
+    description: Install python dependencies
+    steps:
+      - setup
+      - restore_cache:
+          key: v1-{{ checksum "pyproject.toml" }}-{{ checksum "poetry.lock" }}
+      - run-make:
+          command: install-base
+      - save_cache:
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+          key: v1-{{ checksum "pyproject.toml" }}-{{ checksum "poetry.lock" }}
+
+  setup-python:
+    description: Install python dependencies
+    steps:
+      - setup
+      - restore_cache:
+          key: v1-{{ checksum "pyproject.toml" }}-{{ checksum "poetry.lock" }}
+      - run-make:
+          command: install
+      - save_cache:
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+          key: v1-{{ checksum "pyproject.toml" }}-{{ checksum "poetry.lock" }}
+
+  persist-coverage:
+    steps:
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .coverage
+            - coverage.xml
+
+  publish:
+    steps:
+      - attach_workspace:
+          at: .
+      - run: bash <(curl -s https://codecov.io/bash)
+
+jobs:
+  test-python36:
+    executor: python36
+    steps:
+      - setup-python
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - attach_workspace:
+          at: .
+      - run-make:
+          command: test
+      - persist-coverage
+
+  test-python37:
+    executor: python37
+    steps:
+      - setup-python
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run-make:
+          command: test
+
+  test-python38:
+    executor: python38
+    steps:
+      - setup-python
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run-make:
+          command: test
+
+  lint:
+    executor: python36
+    steps:
+      - setup-python
+      - run-make:
+          command: lint
+
+  publish:
+    executor: publish
+    steps:
+      - setup-python
+      - publish
+
 
 workflows:
-  test:
+  build_all:
     jobs:
-      - python-35-test
-      - python-36-test
-      - python-37-test
-      - lint
+      - test-python36
+      - test-python37
+      - test-python38
+
       - publish:
           requires:
-            - lint
-            - python-35-test
-            - python-36-test
-            - python-37-test
+            - test-python36
+            - test-python37
+            - test-python38
           filters:
             branches:
               only:
