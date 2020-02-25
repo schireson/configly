@@ -1,30 +1,28 @@
-.PHONY: help init build run test lint format
-.DEFAULT_GOAL := help
+.PHONY: install build test lint format publish
+.DEFAULT_GOAL := test
 
-init:
-	poetry install -E toml -E yaml
+install:
+	poetry install -E toml -E yaml -E vault
 
 build:
 	poetry build
 
 test:
-	poetry run pytest \
-		--doctest-modules \
-		--cov-report term-missing \
-		--cov-report term:skip-covered \
-		--cov=src \
-		-vv \
-		--ff \
-		src tests
+	coverage run -a -m py.test src tests -vv
+	coverage report
+	poetry run coverage xml
 
 lint:
-	poetry run flake8 src/ tests/
-	poetry run isort -rc -c src/ tests/
-	poetry run black --diff --check src/ tests/
+	poetry run flake8 src tests
+	poetry run isort --check-only --recursive src tests
+	poetry run pydocstyle src tests
+	poetry run black --check src tests
+	poetry run mypy src tests
+	poetry run bandit src
 
 format:
-	poetry run isort -rc src tests
+	poetry run isort --recursive src tests
 	poetry run black src tests
 
 publish: build
-	lucha cicd publish pypi
+	poetry publish -u __token__ -p '${PYPI_PASSWORD}' --no-interaction
