@@ -1,10 +1,11 @@
 import json
 
 from configly import get_package_name
+from configly.interpolators import Interpolator
 from configly.registry import register_interpolator
 
 
-class VaultInterpolator:
+class VaultInterpolator(Interpolator):
     def __init__(self, **kwargs):
         try:
             import hvac
@@ -23,12 +24,6 @@ class VaultInterpolator:
         except hvac.exceptions.InvalidPath:
             raise KeyError(name)
         return json.dumps(result["data"])
-
-    def get(self, name, default=None):
-        try:
-            return self[name]
-        except KeyError:
-            return default
 
 
 register_interpolator("VAULT", VaultInterpolator)

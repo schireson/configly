@@ -1,8 +1,10 @@
 import functools
 import os
 
+from configly.interpolators import Interpolator
 
-class FileInterpolator:
+
+class FileInterpolator(Interpolator):
     yaml_safe = False
 
     @functools.lru_cache()
@@ -12,9 +14,3 @@ class FileInterpolator:
 
         with open(name, mode="rb") as f:
             return f.read().decode("utf-8")
-
-    def get(self, name, default=None):
-        try:
-            return self[name]
-        except KeyError:
-            return default

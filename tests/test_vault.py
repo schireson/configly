@@ -1,4 +1,3 @@
-import base64
 import json
 import textwrap
 from unittest.mock import mock_open, patch

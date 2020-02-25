@@ -1,7 +1,9 @@
 import os
 
+from configly.interpolators import Interpolator
 
-class EnvVarInterpolator:
+
+class EnvVarInterpolator(Interpolator):
     def __getitem__(self, name):
         return os.environ[name]
 
