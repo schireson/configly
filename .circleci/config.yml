@@ -4,35 +4,14 @@ executors:
   python36:
     docker:
       - image: circleci/python:3.6
-      - image: postgres:9.6.10-alpine
-        environment:
-          POSTGRES_DB: dev
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-      - image: circleci/mongo:3.6.12
-        command: "mongod --journal"
 
   python37:
     docker:
       - image: circleci/python:3.7
-      - image: postgres:9.6.10-alpine
-        environment:
-          POSTGRES_DB: dev
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-      - image: circleci/mongo:3.6.12
-        command: "mongod --journal"
 
   python38:
     docker:
       - image: circleci/python:3.8
-      - image: postgres:9.6.10-alpine
-        environment:
-          POSTGRES_DB: dev
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
-      - image: circleci/mongo:3.6.12
-        command: "mongod --journal"
 
   publish:
     docker:
@@ -57,19 +36,6 @@ commands:
           name: Run a make command
           command: |
             poetry run make << parameters.command >>
-
-  setup-python-base:
-    description: Install python dependencies
-    steps:
-      - setup
-      - restore_cache:
-          key: v1-{{ checksum "pyproject.toml" }}-{{ checksum "poetry.lock" }}
-      - run-make:
-          command: install-base
-      - save_cache:
-          paths:
-            - /home/circleci/.cache/pypoetry/virtualenvs
-          key: v1-{{ checksum "pyproject.toml" }}-{{ checksum "poetry.lock" }}
 
   setup-python:
     description: Install python dependencies
