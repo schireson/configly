@@ -34,3 +34,4 @@ html_sidebars = {"**": ["globaltoc.html", "relations.html", "sourcelink.html", "
 intersphinx_mapping = {"https://docs.python.org/": None}
 
 autoclass_content = "both"
+master_doc = "index"
