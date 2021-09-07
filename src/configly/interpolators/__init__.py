@@ -1,4 +1,3 @@
-# flake8: noqa
 import abc
 
 
@@ -27,5 +26,5 @@ class Interpolator(abc.ABC):
             return default
 
 
-from configly.interpolators.env import EnvVarInterpolator  # isort: skip
-from configly.interpolators.file import FileInterpolator  # isort: skip
+from configly.interpolators.env import EnvVarInterpolator  # noqa, isort:skip
+from configly.interpolators.file import FileInterpolator  # noqa, isort:skip
