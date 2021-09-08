@@ -109,3 +109,4 @@ tmp-variables.json
 
 .direnv
 shell.nix
+config.yml

@@ -2,6 +2,7 @@ import re
 from collections.abc import Iterable, Mapping
 
 from configly.registry import registry
+from configly.utilities import quote_string
 
 
 def post_process(loader, value, registry=registry):
@@ -43,7 +44,12 @@ def post_process(loader, value, registry=registry):
                 var_value = interpolator.get(var_name, default)
 
             result = pre + var_value + post
+            if len(result) and not result[0].isalnum():
+                # If the first character of `pre` is not alphanumeric, safely quote the result.
+                result = quote_string(result)
+
             if getattr(interpolator, "yaml_safe", True):
                 return loader.load_value(result)
+
             return result
         return value
