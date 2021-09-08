@@ -128,3 +128,10 @@ class Test_post_process_type_interpretation:
         input_ = {"foo": "1<% ENV[foo, null] %>2"}
         config = Config(post_process(yaml, input_))
         assert config.foo == "1null2"
+
+    @patch("os.environ", new={"foo": '{"hello": "world"}'})
+    def test_object_values(self):
+        input_ = {"foo": "<% ENV[foo] %>"}
+        config = Config(post_process(yaml, input_))
+        assert type(config.foo) == Config
+        assert config.foo.to_dict() == {"hello": "world"}
