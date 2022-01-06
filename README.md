@@ -5,11 +5,12 @@
 ```yaml
 # config.yml
 foo:
-    bar: <% ENV[REQUIRED] %>
-    baz: <% ENV[OPTIONAL, true] %>
+  bar: <% ENV[REQUIRED] %>
+  baz: <% ENV[OPTIONAL, true] %>
 list_of_stuff:
-    - fun<% ENV[NICE, dament] %>al
-    - fun<% ENV[AGH, er] %>al
+  - fun<% ENV[NICE, dament] %>al
+  - fun<% ENV[AGH, er] %>al
+  - more/<% ENV[THAN, er] %>/one/<% ENV[interpolation, er] %>!
 ```
 
 ```python
@@ -78,29 +79,29 @@ import configparser
 And this is all assuming that everyone is loading configuration at the outermost entrypoint!
 The two worst possible outcomes in configuration are:
 
-* You are loading configuration lazily and/or deeply within your application, such that it
+- You are loading configuration lazily and/or deeply within your application, such that it
   hits a critical failure after having seemingly successfully started up.
-* There is not a singular location at which you can go to see all configuration your app might
+- There is not a singular location at which you can go to see all configuration your app might
   possibly be reading from.
-
 
 ## The pitch
 
 `Configly` asserts configuration should:
-* Be centralized
-  * One should be able to look at one file to see all (env vars, files, etc) which must exist for the
+
+- Be centralized
+  - One should be able to look at one file to see all (env vars, files, etc) which must exist for the
     application to function.
-* Be comprehensive
-  * One should not find configuration being loaded secretly elsewhere
-* Be declarative/static
-  * code-execution (e.g. the class above) in the definition of the config inevitably makes it
+- Be comprehensive
+  - One should not find configuration being loaded secretly elsewhere
+- Be declarative/static
+  - code-execution (e.g. the class above) in the definition of the config inevitably makes it
     hard to interpret, as the config becomes more complex.
-* Be namespacable
-  * One should not have to prepend `foo_` namespaces to all `foo` related config names
-* Be loaded, once, at app startup
-  * (At least the _definition_ of the configuration you're loading)
-* (Ideally) have structured output
-  * If something is an `int`, ideally it would be read as an int.
+- Be namespacable
+  - One should not have to prepend `foo_` namespaces to all `foo` related config names
+- Be loaded, once, at app startup
+  - (At least the _definition_ of the configuration you're loading)
+- (Ideally) have structured output
+  - If something is an `int`, ideally it would be read as an int.
 
 To that end, the `configly.Config` class exposes a series of classmethods from which your config
 can be loaded. It's largely unimportant what the input format is, but we started with formats
@@ -118,24 +119,28 @@ Given an input `config.yml` file:
 ```yaml
 # config.yml
 foo:
-    bar: <% ENV[REQUIRED] %>
-    baz: <% ENV[OPTIONAL, true] %>
+  bar: <% ENV[REQUIRED] %>
+  baz: <% ENV[OPTIONAL, true] %>
 list_of_stuff:
-    - fun<% ENV[NICE, dament] %>al
-    - fun<% ENV[AGH, er] %>al
+  - fun<% ENV[NICE, dament] %>al
+  - fun<% ENV[AGH, er] %>al
+  - more/<% ENV[THAN, er] %>/one/<% ENV[interpolation, er] %>!
 ```
 
-A couple of things jump out:
-* Most importantly, whatever the configuration value is, it's intreted as a literal value in the
-  format of the file which loads it. I.E. loading `"true"` from the evironment in a yaml file
-  will yield a python `True`. Ditto `"1"`, or `"null"`.
-* Each `<% ... %>` section indicates a variable
-* `ENV` is an "interpolator" which knows how to obtain environment variables
-* `[VAR]` Will raise an error if that piece of config is not found
-* `[VAR, true]` Will `VAR` to the value after the comma
-* The interpolation can be a sub-portion of a key (`fun<% ENV[NICE, dament] %>al` interpolates
-  to "fundamental"). Another example being `'<% ENV[X, 3] %>'` interpolates to `'1'` instead of `1`
+A number of things are exemplified in the example above:
 
+- Each `<% ... %>` section indicates an interpolated value, the interpolation can
+  be a fragment of the overall value, and multiple values can be interpolated
+  within a single value.
+
+- `ENV` is an "interpolator" which knows how to obtain environment variables
+
+- `[VAR]` Will raise an error if that piece of config is not found, whereas
+  `[VAR, true]` will default `VAR` to the value after the comma
+
+- Whatever the final value is, it's interpreted as a literal value in the
+  format of the file which loads it. I.E. `true` -> python `True`, `1` ->
+  python `1`, and `null` -> python `None`.
 
 Now that you've loaded the above configuration:
 

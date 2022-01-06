@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "configly"
-version = "0.2.2"
+version = "0.3.0"
 description = ""
-authors = []
+authors = ["Dan Cardin <ddcardin@gmail.com>", "Omar Khan <oakhan3@gmail.com>"]
 license = "MIT"
 keywords = [ "config", "yaml", "toml", "env" ]
 repository = "https://github.com/schireson/configly"

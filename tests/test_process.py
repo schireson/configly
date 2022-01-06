@@ -135,3 +135,9 @@ class Test_post_process_type_interpretation:
         config = Config(post_process(yaml, input_))
         assert type(config.foo) == Config
         assert config.foo.to_dict() == {"hello": "world"}
+
+    @patch("os.environ", new={"foo": "one", "bar": 'two', 'baz': 'three'})
+    def test_multiple_matches(self):
+        input_ = {"foo": "<% ENV[foo] %>+<% ENV[bar] %>=<% ENV[baz] %>"}
+        config = Config(post_process(yaml, input_))
+        assert config.to_dict() == {"foo": "one+two=three"}

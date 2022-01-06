@@ -4,6 +4,8 @@ from collections.abc import Iterable, Mapping
 from configly.registry import registry
 from configly.utilities import quote_string
 
+INTERPOLATION_REGEX = re.compile(r"(.*)\<%\s*(\w+)\[([\w.]+)(?:,\s*(.+))?\]\s*%>(.*)")
+
 
 def post_process(loader, value, registry=registry):
     if isinstance(value, Mapping):
@@ -19,11 +21,17 @@ def post_process(loader, value, registry=registry):
         return result
 
     else:
-        if not isinstance(value, str):
-            return value
+        # Repeatedly evaluate the string until there are no interpolation blocks
+        while True:
+            # The post-interpolation of previous values might coerce them into
+            # concrete values, on which no further processing is necessary.
+            if not isinstance(value, str):
+                break
 
-        match = re.match(r"(.*)\<%\s*(\w+)\[([\w.]+)(?:,\s*(.+))?\]\s*%>(.*)", value)
-        if match:
+            match = re.match(INTERPOLATION_REGEX, value)
+            if not match:
+                break
+
             groups = match.groups()
             pre, interpolation_type, var_name, default, post = groups
 
@@ -49,7 +57,8 @@ def post_process(loader, value, registry=registry):
                 result = quote_string(result)
 
             if getattr(interpolator, "yaml_safe", True):
-                return loader.load_value(result)
+                value = loader.load_value(result)
+            else:
+                value = result
 
-            return result
         return value
