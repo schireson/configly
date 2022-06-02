@@ -26,5 +26,9 @@ class Interpolator(abc.ABC):
             return default
 
 
-from configly.interpolators.env import EnvVarInterpolator  # noqa, isort:skip
-from configly.interpolators.file import FileInterpolator  # noqa, isort:skip
+# isort: split
+from configly.interpolators.docker_secret import DockerSecretInterpolator  # noqa
+from configly.interpolators.env import EnvVarInterpolator  # noqa
+from configly.interpolators.file import FileInterpolator  # noqa
+
+__all__ = ["EnvVarInterpolator", "FileInterpolator", "DockerSecretInterpolator", "Interpolator"]
