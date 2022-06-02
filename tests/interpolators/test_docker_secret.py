@@ -22,7 +22,7 @@ def test_secret_value_opens_file():
             registry=registry,
         )
     assert config == Config({"foo": {"bar": "meow"}})
-    assert m.mock_calls[0].args[0] == "foo/bar.txt"
+    assert m.mock_calls[0][1][0] == "foo/bar.txt"
 
 
 def test_defaults_value():

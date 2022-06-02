@@ -27,6 +27,9 @@ def test_fallback_to_tomli():
     result = loader.loads("foo = 4")
     assert result == {"foo": 4}
 
+    result = loader.load_value("4")
+    assert result == 4
+
 
 @patch.dict("sys.modules", {"tomli": None, "tomllib": None})
 def test_fallback_to_toml():
@@ -34,11 +37,17 @@ def test_fallback_to_toml():
     result = loader.loads("foo = 4")
     assert result == {"foo": 4}
 
+    result = loader.load_value("4")
+    assert result == 4
+
 
 def test_toml_loads():
     loader = TomlLoader()
     result = loader.loads("meow = 4")
     assert result == {"meow": 4}
+
+    result = loader.load_value("4")
+    assert result == 4
 
 
 @patch.dict("sys.modules", {"ruamel.yaml": None})

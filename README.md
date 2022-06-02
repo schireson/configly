@@ -1,4 +1,4 @@
-![CircleCI](https://img.shields.io/circleci/build/gh/schireson/configly/master) [![codecov](https://codecov.io/gh/schireson/configly/branch/master/graph/badge.svg)](https://codecov.io/gh/schireson/configly) [![Documentation Status](https://readthedocs.org/projects/configly/badge/?version=latest)](https://configly.readthedocs.io/en/latest/?badge=latest)
+![Github Actions](https://github.com/schireson/configly/actions/workflows/build.yml/badge.svg) [![codecov](https://codecov.io/gh/schireson/configly/branch/master/graph/badge.svg)](https://codecov.io/gh/schireson/configly) [![Documentation Status](https://readthedocs.org/projects/configly/badge/?version=latest)](https://configly.readthedocs.io/en/latest/?badge=latest)
 
 ## TL;DR
 
