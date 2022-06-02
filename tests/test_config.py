@@ -18,7 +18,7 @@ def test_empty_config():
             foo:
                 bar: <% ENV[bar, 4] %>
             """
-        )
+        ).encode("utf-8")
     ),
 )
 def test_yaml():
@@ -35,7 +35,7 @@ def test_yaml():
             bar = "<% ENV[var, 4] %>"
             baz = "a<% ENV[foo, 4] %>sdf"
             """
-        )
+        ).encode("utf-8")
     ),
 )
 def test_toml():

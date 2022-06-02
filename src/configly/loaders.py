@@ -1,3 +1,4 @@
+import importlib
 import json
 from typing import TypeVar
 
@@ -40,15 +41,42 @@ class JsonLoader:
             return value
 
 
-class TomlLoader:
-    def __init__(self):
-        try:
-            import toml
-        except ImportError:
-            raise ImportError("Install `configly[toml]` to use the yaml loader.")
+def _tomli_parse_value(loader, value):
+    return loader._parser.parse_value(value, 0, float)[1]
 
-        self.loader = toml
-        self.decoder = toml.TomlDecoder()
+
+def _toml_parse_value(loader, value):
+    decoder = loader.TomlDecoder()
+    return decoder.load_value(value)[0]
+
+
+class TomlLoader:
+    _packages = [
+        ("tomllib", _tomli_parse_value),
+        ("tomli", _tomli_parse_value),
+        ("toml", _toml_parse_value),
+    ]
+
+    def __init__(self):
+        loader = None
+        decoder = None
+        for package, package_decoder in self._packages:
+            try:
+                loader = importlib.import_module(package)
+            except ImportError:
+                continue
+            else:
+                decoder = package_decoder
+                break
+
+        if loader is None:
+            raise ImportError(
+                "No toml parser available. One is included in python 3.11's stdlib default, or "
+                "alternatively install `configly[tomli]` or configly[toml]`."
+            )
+
+        self.loader = loader
+        self.decoder = decoder
 
     def load(self, value):
         return self.loader.load(value)
@@ -58,7 +86,7 @@ class TomlLoader:
 
     def load_value(self, value):
         try:
-            return self.decoder.load_value(value)[0]
+            return self.decoder(self.loader, value)
         except ValueError:
             return value
 

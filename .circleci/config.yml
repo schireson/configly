@@ -1,10 +1,6 @@
 version: 2.1
 
 executors:
-  python36:
-    docker:
-      - image: circleci/python:3.6
-
   python37:
     docker:
       - image: circleci/python:3.7
@@ -12,6 +8,18 @@ executors:
   python38:
     docker:
       - image: circleci/python:3.8
+
+  python39:
+    docker:
+      - image: circleci/python:3.9
+
+  python310:
+    docker:
+      - image: circleci/python:3.10
+
+  python311:
+    docker:
+      - image: circleci/python:3.11
 
   publish:
     docker:
@@ -65,18 +73,6 @@ commands:
       - run: bash <(curl -s https://codecov.io/bash)
 
 jobs:
-  test-python36:
-    executor: python36
-    steps:
-      - setup-python
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - attach_workspace:
-          at: .
-      - run-make:
-          command: test
-      - persist-coverage
-
   test-python37:
     executor: python37
     steps:
@@ -95,6 +91,36 @@ jobs:
       - run-make:
           command: test
 
+  test-python39:
+    executor: python39
+    steps:
+      - setup-python
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run-make:
+          command: test
+
+  test-python310:
+    executor: python310
+    steps:
+      - setup-python
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run-make:
+          command: test
+
+  test-python311:
+    executor: python311
+    steps:
+      - setup-python
+      - attach_workspace:
+          at: .
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run-make:
+          command: test
+      - persist-coverage
+
   lint:
     executor: python36
     steps:
@@ -107,7 +133,6 @@ jobs:
     steps:
       - setup-python
       - publish
-
 
 workflows:
   build_all:

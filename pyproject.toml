@@ -20,6 +20,7 @@ python = ">=3.6.2,<4"
 
 'ruamel.yaml' = { version = "*", optional = true }
 toml = { version = "*", optional = true }
+tomli = { version = "*", optional = true }
 hvac = { version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
@@ -37,6 +38,7 @@ types-toml = "^0.1.5"
 [tool.poetry.extras]
 yaml = [ "ruamel.yaml" ]
 toml = [ "toml" ]
+tomli = [ "tomli" ]
 vault = [ "hvac" ]
 
 [tool.black]

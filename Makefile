@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := test
 
 install:
-	poetry install -E toml -E yaml -E vault
+	poetry install -E toml -E yaml -E vault -E tomli
 
 build:
 	poetry build
