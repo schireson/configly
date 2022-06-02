@@ -1,6 +1,5 @@
 import json
 
-from configly import get_package_name
 from configly.interpolators import Interpolator
 from configly.registry import register_interpolator
 
@@ -10,9 +9,7 @@ class VaultInterpolator(Interpolator):
         try:
             import hvac
         except ImportError:
-            raise ImportError(
-                f"Try installing `{get_package_name()}[vault]` to use the vault interpolator"
-            )
+            raise ImportError("Try installing `configly[vault]` to use the vault interpolator")
 
         self.client = hvac.Client(**kwargs)
 

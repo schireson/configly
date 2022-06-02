@@ -8,11 +8,7 @@ class YamlLoader:
         try:
             from ruamel.yaml import YAML
         except ImportError:
-            raise ImportError(
-                "Install `{package}[yaml]` to use the yaml loader.".format(
-                    package=get_package_name()
-                )
-            )
+            raise ImportError("Install `configly[yaml]` to use the yaml loader.")
 
         yaml = YAML(typ="safe")
 
