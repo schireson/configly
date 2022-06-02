@@ -1,6 +1,5 @@
 import json
-
-from configly import get_package_name
+from typing import TypeVar
 
 
 class YamlLoader:
@@ -17,6 +16,9 @@ class YamlLoader:
     def load(self, value):
         return self.decoder.load(value)
 
+    def loads(self, value):
+        return self.load(value)
+
     def load_value(self, value):
         return self.decoder.load(value)
 
@@ -27,6 +29,9 @@ class JsonLoader:
 
     def load(self, value):
         return json.load(value)
+
+    def loads(self, value: str):
+        return json.loads(value)
 
     def load_value(self, value):
         try:
@@ -40,20 +45,22 @@ class TomlLoader:
         try:
             import toml
         except ImportError:
-            raise ImportError(
-                "Install `{package}[toml]` to use the yaml loader.".format(
-                    package=get_package_name()
-                )
-            )
+            raise ImportError("Install `configly[toml]` to use the yaml loader.")
 
-        self.loader = toml.load
+        self.loader = toml
         self.decoder = toml.TomlDecoder()
 
     def load(self, value):
-        return self.loader(value)
+        return self.loader.load(value)
+
+    def loads(self, value):
+        return self.loader.loads(value)
 
     def load_value(self, value):
         try:
             return self.decoder.load_value(value)[0]
         except ValueError:
             return value
+
+
+Loader = TypeVar("Loader", YamlLoader, JsonLoader, TomlLoader)

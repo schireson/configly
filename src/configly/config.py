@@ -26,30 +26,45 @@ class Config:
         self._registry = _registry
 
     @classmethod
-    def from_loader(cls, loader, file, registry=registry):
-        with open(file, "rb") as f:
-            result = loader.load(f)
+    def from_loader(
+        cls,
+        loader: Loader,
+        file: Optional[str] = None,
+        content: Optional[str] = None,
+        registry=registry,
+    ):
+        result = {}
+
+        if file:
+            with open(file, "rb") as f:
+                result = loader.load(f)
+
+        if content:
+            result = loader.loads(content)
 
         output = post_process(loader=loader, value=result, registry=registry)
         return cls(output, _src_input=result, _loader=loader, _registry=registry)
 
     @classmethod
-    def from_yaml(cls, file, registry=registry):
-        """Open a yaml `file` and load it into the resulting config object.
-        """
-        return cls.from_loader(YamlLoader(), file, registry=registry)
+    def from_yaml(
+        cls, file: Optional[str] = None, *, content: Optional[str] = None, registry=registry
+    ):
+        """Open a yaml `file` and load it into the resulting config object."""
+        return cls.from_loader(YamlLoader(), file=file, content=content, registry=registry)
 
     @classmethod
-    def from_json(cls, file, registry=registry):
-        """Open a toml `file` and load it into the resulting config object.
-        """
-        return cls.from_loader(JsonLoader(), file, registry=registry)
+    def from_json(
+        cls, file: Optional[str] = None, content: Optional[str] = None, registry=registry
+    ):
+        """Open a toml `file` and load it into the resulting config object."""
+        return cls.from_loader(JsonLoader(), file=file, content=content, registry=registry)
 
     @classmethod
-    def from_toml(cls, file, registry=registry):
-        """Open a toml `file` and load it into the resulting config object.
-        """
-        return cls.from_loader(TomlLoader(), file, registry=registry)
+    def from_toml(
+        cls, file: Optional[str] = None, content: Optional[str] = None, registry=registry
+    ):
+        """Open a toml `file` and load it into the resulting config object."""
+        return cls.from_loader(TomlLoader(), file=file, content=content, registry=registry)
 
     def refresh(self):
         """Reevaluate the interpolation of variable values in the given sub-config.

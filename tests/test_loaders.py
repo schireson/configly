@@ -12,8 +12,20 @@ def test_toml_unavailable():
     assert "configly" in str(e.value)
 
 
+def test_toml_loads():
+    loader = TomlLoader()
+    result = loader.loads("meow = 4")
+    assert result == {"meow": 4}
+
+
 @patch.dict("sys.modules", {"ruamel.yaml": None})
 def test_yaml_unavailable():
     with pytest.raises(ImportError) as e:
         YamlLoader()
     assert "configly" in str(e.value)
+
+
+def test_json_loads():
+    loader = JsonLoader()
+    result = loader.loads('{"meow": 4}')
+    assert result == {"meow": 4}
