@@ -1,7 +1,8 @@
 import copy
 from collections.abc import Mapping
+from typing import Optional
 
-from configly.loaders import JsonLoader, TomlLoader, YamlLoader
+from configly.loaders import JsonLoader, Loader, TomlLoader, YamlLoader
 from configly.process import post_process
 from configly.registry import registry
 
