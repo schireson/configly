@@ -16,7 +16,7 @@ release = "0.2.0"
 version = "0.2.0"
 
 extensions = [
-    "m2r",
+    "m2r2",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",

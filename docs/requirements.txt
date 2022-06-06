@@ -1,6 +1,8 @@
-m2r
-sphinx
-sphinx-autobuild
-sphinx_autodoc_typehints
+m2r2==0.2.7
+sphinx==3.3.0
 sphinx_rtd_theme
+sphinx_autodoc_typehints
+sphinx-autobuild
+docutils<0.18
+mistune==0.8.4
 .
