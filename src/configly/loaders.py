@@ -1,6 +1,6 @@
+import importlib
 import json
-
-from configly import get_package_name
+from typing import TypeVar
 
 
 class YamlLoader:
@@ -8,11 +8,7 @@ class YamlLoader:
         try:
             from ruamel.yaml import YAML
         except ImportError:
-            raise ImportError(
-                "Install `{package}[yaml]` to use the yaml loader.".format(
-                    package=get_package_name()
-                )
-            )
+            raise ImportError("Install `configly[yaml]` to use the yaml loader.")
 
         yaml = YAML(typ="safe")
 
@@ -20,6 +16,9 @@ class YamlLoader:
 
     def load(self, value):
         return self.decoder.load(value)
+
+    def loads(self, value):
+        return self.load(value)
 
     def load_value(self, value):
         return self.decoder.load(value)
@@ -32,6 +31,9 @@ class JsonLoader:
     def load(self, value):
         return json.load(value)
 
+    def loads(self, value: str):
+        return json.loads(value)
+
     def load_value(self, value):
         try:
             return self.decoder.decode(value)
@@ -39,25 +41,54 @@ class JsonLoader:
             return value
 
 
+def _tomli_parse_value(loader, value):
+    return loader._parser.parse_value(value, 0, float)[1]
+
+
+def _toml_parse_value(loader, value):
+    decoder = loader.TomlDecoder()
+    return decoder.load_value(value)[0]
+
+
 class TomlLoader:
+    _packages = [
+        ("tomllib", _tomli_parse_value),
+        ("tomli", _tomli_parse_value),
+        ("toml", _toml_parse_value),
+    ]
+
     def __init__(self):
-        try:
-            import toml
-        except ImportError:
+        loader = None
+        decoder = None
+        for package, package_decoder in self._packages:
+            try:
+                loader = importlib.import_module(package)
+            except ImportError:
+                continue
+            else:
+                decoder = package_decoder
+                break
+
+        if loader is None:
             raise ImportError(
-                "Install `{package}[toml]` to use the yaml loader.".format(
-                    package=get_package_name()
-                )
+                "No toml parser available. One is included in python 3.11's stdlib default, or "
+                "alternatively install `configly[tomli]` or configly[toml]`."
             )
 
-        self.loader = toml.load
-        self.decoder = toml.TomlDecoder()
+        self.loader = loader
+        self.decoder = decoder
 
     def load(self, value):
-        return self.loader(value)
+        return self.loader.load(value)
+
+    def loads(self, value):
+        return self.loader.loads(value)
 
     def load_value(self, value):
         try:
-            return self.decoder.load_value(value)[0]
+            return self.decoder(self.loader, value)
         except ValueError:
             return value
+
+
+Loader = TypeVar("Loader", YamlLoader, JsonLoader, TomlLoader)

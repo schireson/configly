@@ -5,7 +5,6 @@ from unittest.mock import mock_open, patch
 import pytest
 import responses
 
-from configly import get_package_name
 from configly.config import Config, post_process
 from configly.interpolators.vault import VaultInterpolator
 from configly.loaders import YamlLoader
@@ -34,7 +33,7 @@ def mock_key_value(key, value=None, status=200):
 def test_yaml_unavailable():
     with pytest.raises(ImportError) as e:
         VaultInterpolator()
-    assert get_package_name() in str(e.value)
+    assert "configly" in str(e.value)
 
 
 @patch(

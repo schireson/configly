@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := test
 
 install:
-	poetry install -E toml -E yaml -E vault
+	poetry install -E toml -E yaml -E vault -E tomli
 
 build:
 	poetry build
@@ -14,14 +14,14 @@ test:
 
 lint:
 	flake8 src tests
-	isort --check-only --recursive src tests
+	isort --check-only src tests
 	pydocstyle src tests
 	black --check src tests
 	mypy src tests
 	bandit src
 
 format:
-	isort --recursive src tests
+	isort src tests
 	black src tests
 
 publish: build
