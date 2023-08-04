@@ -15,6 +15,9 @@ list_of_stuff:
 
 ```python
 # app.py
+from configly import Config
+
+
 config = Config.from_yaml('config.yml')
 
 print(config.foo.bar)
@@ -108,6 +111,9 @@ can be loaded. It's largely unimportant what the input format is, but we started
 that deserialize into at least `str`, `float`, `int`, `bool` and `None` types.
 
 ```python
+from configly import Config
+
+
 # Currently supported input formats.
 config = Config.from_yaml('config.yml')
 config = Config.from_json('config.json')
@@ -146,6 +152,9 @@ Now that you've loaded the above configuration:
 
 ```python
 # app.py
+from configly import Config
+
+
 config = Config.from_yaml('config.yml')
 
 # You can access namespaced config using dot access
