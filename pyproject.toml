@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "configly"
-version = "1.0.0"
+version = "1.0.1"
 description = ""
 authors = ["Dan Cardin <ddcardin@gmail.com>", "Omar Khan <oakhan3@gmail.com>"]
 license = "MIT"
-keywords = [ "config", "yaml", "toml", "env" ]
+keywords = [ "config", "yaml", "yml", "toml", "env" ]
 repository = "https://github.com/schireson/configly"
 packages = [
     { from = "src", include = "configly" },
@@ -37,6 +37,7 @@ types-toml = "^0.1.5"
 
 [tool.poetry.extras]
 yaml = [ "ruamel.yaml" ]
+yml = [ "ruamel.yaml" ]
 toml = [ "toml" ]
 tomli = [ "tomli" ]
 vault = [ "hvac" ]
